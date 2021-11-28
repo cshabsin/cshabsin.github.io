@@ -3,6 +3,7 @@ layout: post
 title:  "What's all this, then?"
 date:   2021-11-27 21:36:00 -0500
 categories: meta
+tags: intro advent go javascript appengine rsvp jekyll
 ---
 I've been messing around in my spare time with Go and Javascript and Typescript and trying to get a taste of what development outside Google is like, in completely non-consequential forms.
 
