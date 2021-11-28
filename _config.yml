@@ -28,7 +28,7 @@ twitter_username: cshabsin
 github_username:  cshabsin
 
 # Build settings
-theme: minima
+theme: jekyll-slate
 plugins:
   - jekyll-feed
 
