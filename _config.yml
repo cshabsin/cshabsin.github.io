@@ -22,8 +22,8 @@ title: Chris Shabsin
 email: cshabsin@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
   Chris Shabsin's personal page for tracking projects and such.
-domain: "cshabsin.github.io"
-url: "https://cshabsin.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+domain: ""
+url: "" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: cshabsin
 github_username:  cshabsin
 
