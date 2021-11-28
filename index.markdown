@@ -11,9 +11,8 @@ layout: default
 
 {% for post in site.posts %}
 
-<div class="post-meta">{{ post.date | date: "%a, %Y-%m-%d" }}</div>
+<div style="font-size:75%">{{ post.date | date: "%a, %Y-%m-%d" }}</div>
 
-{:.post-link}
-hi [{{ post.title }}]({{ post.url }})
+[{{ post.title }}]({{ post.url }})
 
 {% endfor %}
