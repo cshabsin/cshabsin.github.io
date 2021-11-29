@@ -2,7 +2,7 @@
 layout: post
 title:  "Messing around with Go with Generics"
 date:   2021-11-28 15:19:00 -0500
-categories: meta
+categories: go
 tags: go generics advent
 author: cshabsin
 ---
