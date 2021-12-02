@@ -70,8 +70,9 @@ func parseFoo(s string) (*foo, error) {
 ```
 
 This proved invaluable when the actual problem came out, even though I
-guessed the wrong ordering and delimiter on the line. Just swap some things
-around and I was all ready to parse "forward 5" into a direction and an
+guessed the wrong ordering and delimiter on the line. Just 
+[swap some things around](https://github.com/cshabsin/advent/commit/f22a09ae0f9d95c982888ff8a5e6de94f9b5285d#diff-ca0bb732dd3e99e811061842cd0c534b3c440a43046c8e36608eb246243543bd)
+and I was all ready to parse "forward 5" into a direction and an
 amount.
 
 I lost a minute to a problem with pasting the answer from my terminal into
