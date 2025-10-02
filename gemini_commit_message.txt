@@ -1,11 +1,10 @@
-docs: Add design for auto-syncing external documents
+feat: Add breadcrumb navigation to design docs
 
-Creates a new design document that details the architecture and
-implementation for automatically syncing files from external repositories
-into the Jekyll site using a cross-repository GitHub Action.
+Overrides the theme's 'post' layout to conditionally display a
+breadcrumb link on pages belonging to the 'designs' collection.
 
-The document also includes a section on alternative solutions that were
-considered and rejected, such as using Git Submodules or a scheduled
-job.
+This adds a "All Designs" link at the top of each design document,
+improving navigation back to the main designs list without affecting
+regular blog posts.
 
-Gemini commit: use prettier to format it, then yes
+Gemini commit: sure
