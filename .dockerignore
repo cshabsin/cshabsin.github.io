@@ -1,0 +1,20 @@
+# Git files
+.git/
+
+# Jekyll build output
+_site/
+
+# Jekyll caches
+.jekyll-cache/
+.jekyll-metadata
+
+# Bundler files
+.bundle/
+vendor/
+
+# Docker files
+Dockerfile
+docker-compose.yml
+
+# Session state
+continue.md

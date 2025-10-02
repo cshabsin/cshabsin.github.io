@@ -5,7 +5,7 @@
 layout: default
 ---
 
-[About](/about/)
+[About](/about/) | [Designs](/designs/)
 
 # Posts
 
