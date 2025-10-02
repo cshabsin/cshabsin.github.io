@@ -1,7 +1,11 @@
-fix: Resolve 404 on /designs page on GitHub Pages
+docs: Add design for auto-syncing external documents
 
-Moves the design listing page from `designs.markdown` to `designs/index.markdown`.
+Creates a new design document that details the architecture and
+implementation for automatically syncing files from external repositories
+into the Jekyll site using a cross-repository GitHub Action.
 
-This makes the URL structure explicit and resolves an issue where the page was not being found on the live GitHub Pages site, despite working correctly in the local development environment.
+The document also includes a section on alternative solutions that were
+considered and rejected, such as using Git Submodules or a scheduled
+job.
 
-Gemini commit: go ahead
+Gemini commit: use prettier to format it, then yes
