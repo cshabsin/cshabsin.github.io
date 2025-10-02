@@ -1,18 +1,7 @@
-feat: Add designs collection and Docker-based local environment
+fix: Resolve 404 on /designs page on GitHub Pages
 
-Adds a new 'designs' collection to the Jekyll site to store design
-documents separately from blog posts.
+Moves the design listing page from `designs.markdown` to `designs/index.markdown`.
 
-To enable local development without a system Ruby installation, this
-commit introduces a Docker-based environment using a Dockerfile and
-docker-compose.yml.
+This makes the URL structure explicit and resolves an issue where the page was not being found on the live GitHub Pages site, despite working correctly in the local development environment.
 
-Key changes:
-- Added a 'designs' collection in _config.yml.
-- Created a page to list all design documents.
-- Added an example design doc and a doc detailing the new Docker setup.
-- Added 'webrick' to the Gemfile to ensure compatibility with Ruby 3+.
-- Configured layouts to ensure consistent theme styling on design pages.
-- Added .dockerignore to optimize the Docker build.
-
-Gemini commit: yes
+Gemini commit: go ahead
