@@ -1,3 +1,8 @@
+---
+layout: default
+title: Continue
+---
+
 This is a summary of our session to be continued later.
 
 **Goal:** Add a 'designs' collection to the Jekyll site and serve it locally for testing.
