@@ -5,8 +5,7 @@ title: Cricket PC Setup
 
 # Cricket PC Setup
 
-This document tracks the setup of my new AI development machine, "cricket". It's
-a PowerSpec G912 with a pretty beefy graphics card (64GB of VRAM).
+This document tracks the setup of my new AI development machine, "cricket".
 
 ## Software Installed
 
@@ -14,6 +13,7 @@ a PowerSpec G912 with a pretty beefy graphics card (64GB of VRAM).
 
 *   Installed `python3`, `python3-pip`, and `python3-venv`.
 *   Cloned the ComfyUI repository to `/home/cshabsin/proj/ComfyUI`.
+*   Copied over the `cvdl` alias from the old Windows PC to download models from Civitai with an API key automatically.
 *   Downloaded models into various `ComfyUI/models` subdirectories.
 *   Experimented with workflows to generate images.
 
@@ -44,3 +44,5 @@ Use `nvm` to switch between these versions when working on the respective projec
 ## To-Do
 
 *   Debug flaky Tailscale connection, particularly for SSH and the ComfyUI web port. Investigate why "MagicDNS" seems to be unreliable.
+*   Copy over `GEMINI.md` files from other systems and synthesize the ideas.
+*   Set up the `ssh-agent` for improved SSH key management.
