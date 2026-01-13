@@ -68,6 +68,26 @@ body {
   padding-left: 5px;
 }
 
+.intro-connect {
+  display: flex;
+  gap: 15px;
+}
+
+.intro-connect a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 5px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.intro-connect a:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ace;
+}
+
 /* Quote Card */
 .quote-card {
   font-size: 1.1em;
@@ -128,5 +148,10 @@ body {
     width: 100%;
     box-sizing: border-box;
     text-align: center;
+  }
+
+  .intro-connect {
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }
