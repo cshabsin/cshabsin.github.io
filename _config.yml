@@ -27,6 +27,8 @@ url: "" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: cshabsin
 github_username:  cshabsin
 
+permalink: /blog/:year/:month/:day/:title
+
 # Build settings
 theme: jekyll-theme-minimal
 plugins:
@@ -35,6 +37,7 @@ plugins:
 collections:
   designs:
     output: true
+    permalink: /blog/designs/:path/
 
 # Exclude from processing.
 # The following items will not be processed, by default.

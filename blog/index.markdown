@@ -3,9 +3,10 @@
 # To modify the layout, see https://jekyllrb.com/docs/themes/#overriding-theme-defaults
 
 layout: default
+title: Blog
 ---
 
-[About](/about/) | [Designs](/designs/)
+[About](/blog/about/) | [Designs](/blog/designs/)
 
 # Games
 

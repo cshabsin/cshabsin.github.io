@@ -1,0 +1,112 @@
+body {
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+  box-sizing: border-box;
+  font-family: Verdana, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Top-justified */
+  padding-top: 5vh;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  max-width: 1000px;
+  width: 100%;
+}
+
+/* Card Styling Base */
+.card {
+  padding: 20px;
+  border-radius: 12px;
+  color: #eed;
+  border: 1px solid rgba(255, 204, 153, 0.3);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+/* Intro Card (Full width at bottom) */
+.intro-card {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 120px;
+}
+
+.intro-card h1 {
+  margin: 0;
+  padding: 10px 20px;
+  background: #ace;
+  color: #024;
+  font: bold 25px sans-serif;
+  border-radius: 4px;
+}
+
+.intro-card .images {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Quote Card */
+.quote-card {
+  font-size: 1.1em;
+  line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.attribution {
+  text-align: right;
+  margin: 1em 0 0;
+  font-style: italic;
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+/* Links Cards */
+.links-card h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 5px;
+  font-size: 1.2em;
+  color: #ffc;
+}
+
+.links-card a {
+  display: block;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  text-decoration: none;
+  color: #fff;
+  border-radius: 6px;
+  transition: all 0.2s;
+  font-weight: bold;
+}
+
+.links-card .divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 10px 0;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 600px) {
+  .intro-card {
+    flex-direction: column-reverse;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .intro-card h1 {
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+  }
+}

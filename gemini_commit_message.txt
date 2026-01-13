@@ -1,11 +1,10 @@
-docs: Add design for auto-syncing external documents
+Migrate new homepage to root and move blog to /blog
 
-Creates a new design document that details the architecture and
-implementation for automatically syncing files from external repositories
-into the Jekyll site using a cross-repository GitHub Action.
+- Moved existing Jekyll blog content (`index.markdown`, `about.markdown`, `designs/`) to `blog/`.
+- Updated `_config.yml` to set permalinks for posts and designs to start with `/blog`.
+- Updated links in `blog/index.markdown` and `blog/about.markdown`.
+- Copied new homepage (`index.html`), `css/`, `assets/`, and legacy `home/` pages to root.
+- Updated `index.html` to link to the Blog at `/blog/`.
+- Renamed `_images` to `assets/images` in the source to comply with Jekyll static file handling.
 
-The document also includes a section on alternative solutions that were
-considered and rejected, such as using Git Submodules or a scheduled
-job.
-
-Gemini commit: use prettier to format it, then yes
+Gemini commit: Merge new homepage with existing Jekyll blog.

@@ -42,12 +42,17 @@ To run:
 
 The firewall is set up to allow port 8000 through to Tailscale, and it can be accessed with `http://cricket.dog-garibaldi.ts.net:8000` from within the Tailscale private network.
 
-### Development Environment
+### Ollama
+
+Installed Ollama in WSL using the "curl" method from their website and used it with the continue.dev
+VS Code extension.
+
+## Development Environment
 
 - Installed Visual Studio Code for Windows.
 - Installed the "Remote - WSL" extension to connect VS Code to the WSL environment.
 
-#### Node.js Version Management
+### Node.js Version Management
 
 There is a known conflict between the Node.js version used for the Gemini CLI and the version required for the `conjunew` project.
 
@@ -56,7 +61,16 @@ There is a known conflict between the Node.js version used for the Gemini CLI an
 
 Use `nvm` to switch between these versions when working on the respective projects.
 
-### Networking
+### Firebase Tools
+
+These require Java, so we install the `openjdk-21-jdk` Ubuntu package, then we can install the firebase tools:
+
+```
+$ sudo apt-get install openjdk-21-jdk
+$ npm install -g firebase-tools
+```
+
+## Networking
 
 - Installed Tailscale on the new PC (cricket), the old PC, a laptop, and a DigitalOcean droplet.
 - Registered all machines with Tailscale.

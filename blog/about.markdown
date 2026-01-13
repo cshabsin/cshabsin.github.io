@@ -1,7 +1,7 @@
 ---
 layout: default
 title: About
-permalink: /about/
+permalink: /blog/about/
 ---
 
 Chris Shabsin is just this guy, y'know?
