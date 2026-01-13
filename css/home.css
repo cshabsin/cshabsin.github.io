@@ -45,35 +45,27 @@ body {
   gap: 15px;
 }
 
+.intro-text {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
 .intro-card h1 {
   margin: 0;
-  padding: 10px 20px;
+  padding: 5px 10px;
   background: #ace;
   color: #024;
   font: bold 25px sans-serif;
   border-radius: 4px;
 }
 
-.intro-games {
-  display: flex;
-  gap: 15px;
-}
-
-.game-link {
-  background: rgba(255, 255, 255, 0.1);
+.subtitle {
+  margin: 0;
   color: #ace;
-  text-decoration: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: 1px solid #ace;
+  font-size: 0.9em;
   font-weight: bold;
-  transition: all 0.2s;
-  text-align: center;
-}
-
-.game-link:hover {
-  background: #ace;
-  color: #024;
+  padding-left: 5px;
 }
 
 /* Quote Card */
@@ -136,15 +128,5 @@ body {
     width: 100%;
     box-sizing: border-box;
     text-align: center;
-  }
-
-  .intro-games {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .game-link {
-    width: 100%;
-    box-sizing: border-box;
   }
 }
