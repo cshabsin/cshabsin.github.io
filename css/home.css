@@ -27,14 +27,22 @@ body {
   box-shadow: 0 4px 6px rgba(0,0,0,0.3);
 }
 
-/* Intro Card (Full width at bottom) */
+/* Header / Intro Card specific */
 .intro-card {
   grid-column: 1 / -1;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
   min-height: 120px;
+}
+
+.intro-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
 .intro-card h1 {
@@ -46,10 +54,26 @@ body {
   border-radius: 4px;
 }
 
-.intro-card .images {
+.intro-games {
   display: flex;
-  align-items: center;
   gap: 15px;
+}
+
+.game-link {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ace;
+  text-decoration: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid #ace;
+  font-weight: bold;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.game-link:hover {
+  background: #ace;
+  color: #024;
 }
 
 /* Quote Card */
@@ -99,14 +123,28 @@ body {
 /* Mobile Adjustments */
 @media (max-width: 600px) {
   .intro-card {
-    flex-direction: column-reverse;
+    flex-direction: column;
     text-align: center;
-    gap: 15px;
+    gap: 20px;
   }
   
+  .intro-left {
+    flex-direction: column;
+  }
+
   .intro-card h1 {
     width: 100%;
     box-sizing: border-box;
     text-align: center;
+  }
+
+  .intro-games {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .game-link {
+    width: 100%;
+    box-sizing: border-box;
   }
 }
