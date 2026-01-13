@@ -8,11 +8,6 @@ title: Blog
 
 [About](/blog/about/) | [Designs](/blog/designs/)
 
-# Games
-
-* [Super Startrek](https://cshabsin.github.io/startrek)
-* [The River Delta](https://delta.shabsin.com/)
-
 # Posts
 
 {% for post in site.posts %}
