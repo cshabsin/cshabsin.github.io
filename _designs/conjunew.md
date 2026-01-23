@@ -4,6 +4,10 @@ title: Conju NextGen Design doc
 author: cshabsin
 ---
 
+# Conju NextGen Design Doc
+
+**Authors:** Chris Shabsin **Status:** In Progress
+
 ## 1. Background
 
 The existing Conju event service is a Go application deployed on AppEngine. Over
@@ -47,15 +51,21 @@ as a modern, reactive web application using a new tech stack.
 
 ### 4.2. Data Model (Firestore)
 
-We will use Firestore with the following top-level collections.
+We will use Firestore with the following top-level collections. This model
+separates the concept of a **Person** (an individual) from a **User** (their
+authentication account).
 
-- **`users`**: Stores user profile information. Corresponds to the `Person`
-  entity in the old app.
-  - `uid` (document ID)
+- **`persons`**: This is the central collection for all individuals in the
+  system, whether they have created an account or not. The document ID is a
+  unique, randomly generated string.
+  - `email`: The person's email address. This is used to link them to an auth
+    account when they sign up.
+  - `authUid`: `string | null`. The UID from Firebase Authentication. This is
+    the link to their login account. It is `null` until the person creates their
+    account.
   - `firstName`
   - `lastName`
   - `nickname`
-  - `email`
   - `pronouns`
   - ... and other personal details.
 
@@ -67,32 +77,56 @@ We will use Firestore with the following top-level collections.
   - `endDate`
   - `venueId`
 
-- **`invitations`**: Manages invitations for an event.
+- **`invitations`**: Manages invitations for an event, linking existing `Person`
+  records to that event.
   - `invitationId` (document ID)
   - `eventId` (reference to `events` collection)
-  - `inviteeIds` (array of user UIDs)
+  - `inviteeIds` (array of `persons` document IDs)
 
-- **`rsvps`**: Stores RSVP responses for each user for a given invitation.
+- **`rsvps`**: Stores RSVP responses for each person for a given invitation.
   - `rsvpId` (document ID)
   - `invitationId`
-  - `userId`
+  - `personId`
   - `status` (e.g., 'Attending', 'Maybe', 'Not Attending')
   - `housingPreference`
   - `dietaryRestrictions`
   - ... and other RSVP details.
 
+### 4.3. Server-Side Logic (Cloud Functions)
+
+To handle privileged operations that cannot be trusted to the client, we will
+use Cloud Functions for Firebase. The initial function will be for managing user
+roles.
+
+- **`setAdminClaim`**: An `onCall` HTTPS function that allows an existing admin
+  to grant admin privileges to another user. It will verify the caller's
+  authentication token to ensure they are an admin before proceeding. This is
+  the **only** mechanism by which a user can be made an admin.
+
 ## 5. Key Features
 
 - **Authentication:**
-  - User registration and login (Email/Password, Google, Passwordless Email Link).
-  - Password reset functionality.
-  - Protected routes for authenticated users.
+  - **Standard Login:** User registration and login via Email/Password, Google,
+    and Passwordless Email Link.
+  - **Invited Signup:** Admins can pre-create a `Person` document with profile
+    information and an email address. When a new user signs up with that email,
+    their authentication account (`authUid`) is automatically linked to the
+    existing `Person` document, granting them access to any pre-existing
+    invitations.
+  - **Password Reset:** Standard password reset functionality.
+  - **Roles and Authorization:** User roles (e.g., admin) will be managed using
+    **Firebase Custom Claims**. A user's role is embedded securely in their ID
+    token by a Cloud Function. The client-side application will read this token
+    to grant access to protected routes and UI elements.
+
 - **Event Dashboard:**
   - View details of the current event.
+
 - **RSVP Flow:**
   - Users can view their invitation.
   - Users can RSVP for themselves and other invitees on their invitation.
   - Update personal information, food preferences, housing preferences, etc.
+
 - **Admin Console:**
   - Manage users, events, and invitations.
   - View reports (RSVP list, food report, rooming report).
@@ -114,20 +148,37 @@ providing instant feedback to user interactions.
 ### 7.1. Development Workflow & Tooling
 
 To ensure code quality and consistency, the project uses a pre-commit hook
-managed by **Husky** and **lint-staged**. Before any commit, the following automated
-checks are performed on staged files:
+managed by **Husky** and **lint-staged**. Before any commit, the following
+automated checks are performed on staged files:
 
-- **Build & Type Check:** The entire project is built using `next build` to catch
-  any TypeScript compilation errors.
+- **Build & Type Check:** The entire project is built using `next build` to
+  catch any TypeScript compilation errors.
 - **Linting:** TypeScript/TSX files are linted with **ESLint** (`eslint --fix`)
   to enforce code style and catch common errors.
-- **Formatting:** Markdown files are automatically formatted with **Prettier** to
-  maintain a consistent style.
+- **Formatting:** Markdown files are automatically formatted with **Prettier**
+  to maintain a consistent style.
 
 ### 7.2. Testing Strategy
 
-Unit and component tests are written using **Jest** and **React Testing Library**.
-This allows for testing component behavior in a simulated DOM environment.
+Our testing strategy is divided into two main categories:
+
+- **Unit & Component Tests:** These are written using **Jest** and **React
+  Testing Library**. They run in a Node.js environment, are very fast, and are
+  ideal for testing individual components in isolation (e.g., verifying that a
+  component renders correctly based on its props). For these tests, any external
+  dependencies (like the `useAuth` hook) are mocked.
+
+- **Integration Tests:** For testing the interaction between our application and
+  Firebase services (especially Firestore), we use **Jest** in combination with
+  the **Firebase Emulator Suite**. These tests run against a live, local
+  instance of the emulators, providing a high-fidelity environment that closely
+  mimics production. While slightly slower than unit tests, they are essential
+  for verifying that our database queries, transactions, and security rules work
+  as expected. This approach is preferred over third-party mocking libraries to
+  ensure maximum accuracy and reliability. To prevent conflicts with manual
+  development data, the integration test suite is configured to run against a
+  separate, dedicated Firebase project ID (`conjunext-test`) within the
+  emulator.
 
 - **Location:** Tests are located in `__tests__` directories alongside the code
   they are testing.
@@ -144,6 +195,14 @@ Firebase features without interacting with the production database or services.
 - **Services:** The Auth and Firestore emulators are used.
 - **Execution:** The emulators are started via the `firebase emulators:start`
   command from the project root.
+
+### 7.4. Coding Style
+
+- **Function Definitions:** We prefer using arrow function expressions assigned
+  to a `const` (`const foo = () => {}`) over function declarations
+  (`function foo() {}`). This is not for any technical reason, but for stylistic
+  consistency with the prevailing conventions in modern React and Next.js
+  projects (e.g., for defining components and hooks).
 
 ## 8. Milestones
 

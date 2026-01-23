@@ -3,7 +3,7 @@ title: Designs
 layout: default
 ---
 
-Here are the design documents for this site.
+Here are my design documents.
 
 <ul>
   {% for design in site.designs %}
