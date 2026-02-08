@@ -40,6 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
         mouseY = e.clientY;
     });
 
+    window.addEventListener('mouseleave', () => {
+        mouseX = -1000;
+        mouseY = -1000;
+    });
+
     window.addEventListener('touchmove', (e) => {
         mouseX = e.touches[0].clientX;
         mouseY = e.touches[0].clientY;
