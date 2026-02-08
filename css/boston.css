@@ -1,6 +1,7 @@
 body {
-  background: black url(images/boston2025.jpg) 0 0 no-repeat fixed;
-  background-size: cover;
+  /* background: black url(images/boston2025.jpg) 0 0 no-repeat fixed;
+  background-size: cover; */
+  background: black;
 }
 
 /* Map specific cards to the transparency theme */
