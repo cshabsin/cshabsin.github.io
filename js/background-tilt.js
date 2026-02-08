@@ -75,13 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const maxDist = 400;
             if (dist < maxDist) {
                 const strength = Math.pow(1 - dist / maxDist, 2);
-                const rotateX = -dy * strength * 0.3; // Increased rotation for more "tilt" feel
+                const rotateX = -dy * strength * 0.3;
                 const rotateY = dx * strength * 0.3;
                 const translateZ = strength * 80;
 
-                tile.el.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(${translateZ}px)`;
+                tile.el.style.transform = `scale(1.1) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(${translateZ}px)`;
             } else {
-                tile.el.style.transform = '';
+                tile.el.style.transform = 'scale(1.1)';
             }
         });
 

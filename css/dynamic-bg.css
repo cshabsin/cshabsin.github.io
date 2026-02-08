@@ -22,7 +22,6 @@
     /* background-size and background-position are set in JS */
     background-repeat: no-repeat;
     will-change: transform;
-    /* This ensures no gaps between tiles */
-    outline: 1px solid transparent;
+    backface-visibility: hidden;
     transform-style: preserve-3d;
 }
