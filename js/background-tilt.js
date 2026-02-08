@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const ctx = canvas.getContext('2d');
 
-    const rows = 12; // Slightly fewer rows/cols for clarity
+    const rows = 12;
     const cols = 12;
     const tiles = [];
 
@@ -37,7 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Update grid template to match new rows/cols
     container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
     container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
@@ -58,13 +57,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('resize', resize);
     resize();
 
-    function rotateX(y, z, deg) {
-        const rad = deg * Math.PI / 180;
+    function rotateX(y, z, rad) {
         return [y * Math.cos(rad) - z * Math.sin(rad), y * Math.sin(rad) + z * Math.cos(rad)];
     }
 
-    function rotateY(x, z, deg) {
-        const rad = deg * Math.PI / 180;
+    function rotateY(x, z, rad) {
         return [x * Math.cos(rad) + z * Math.sin(rad), -x * Math.sin(rad) + z * Math.cos(rad)];
     }
 
@@ -78,75 +75,83 @@ document.addEventListener('DOMContentLoaded', () => {
 
         ctx.clearRect(0, 0, vw, vh);
         
-        tiles.forEach(tile => {
+        // Calculate all tile data first for sorting
+        const tileData = tiles.map(tile => {
             const tCenterX = (tile.c + 0.5) * tileW;
             const tCenterY = (tile.r + 0.5) * tileH;
             const dx = tCenterX - mouseX;
             const dy = tCenterY - mouseY;
             const dist = Math.sqrt(dx * dx + dy * dy);
             const maxDist = 450;
+            
+            let rotX = 0, rotY = 0, transZ = 0, strength = 0;
 
             if (dist < maxDist) {
-                const strength = Math.pow(1 - dist / maxDist, 2);
-                const rotX = -dy * strength * 0.25;
-                const rotY = dx * strength * 0.25;
-                const transZ = strength * 100;
-
-                tile.el.style.transform = `scale(1.05) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(${transZ}px)`;
-
-                const halfW = (tileW / 2) * 1.05; 
-                const halfH = (tileH / 2) * 1.05;
-                const localCorners = [[-halfW, -halfH], [halfW, -halfH], [halfW, halfH], [-halfW, halfH]];
-
-                const frontCorners = localCorners.map(([cx, cy]) => {
-                    let x = cx, y = cy, z = transZ;
-                    [x, z] = rotateY(x, z, rotY);
-                    [y, z] = rotateX(y, z, rotX);
-                    const gX = x + (tCenterX - screenCenterX);
-                    const gY = y + (tCenterY - screenCenterY);
-                    const f = PERSPECTIVE / (PERSPECTIVE - z);
-                    return { x: gX * f + screenCenterX, y: gY * f + screenCenterY };
-                });
-
-                // Instead of the vanishing point, we project to a "back" plane to create a slab/block effect
-                const backCorners = localCorners.map(([cx, cy]) => {
-                    let x = cx, y = cy, z = -50; // Fixed depth back from the grid plane
-                    [x, z] = rotateY(x, z, rotY);
-                    [y, z] = rotateX(y, z, rotX);
-                    const gX = x + (tCenterX - screenCenterX);
-                    const gY = y + (tCenterY - screenCenterY);
-                    const f = PERSPECTIVE / (PERSPECTIVE - z);
-                    return { x: gX * f + screenCenterX, y: gY * f + screenCenterY };
-                });
-
-                // Draw the 4 sides
-                frontCorners.forEach((p, i) => {
-                    const nextI = (i + 1) % 4;
-                    const pNext = frontCorners[nextI];
-                    const bP = backCorners[i];
-                    const bNext = backCorners[nextI];
-
-                    // Shading based on side index
-                    const baseColor = 20 + (i * 10);
-                    ctx.fillStyle = `rgba(${baseColor}, ${baseColor}, ${baseColor + 10}, ${0.95 * strength})`;
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(p.x, p.y);
-                    ctx.lineTo(pNext.x, pNext.y);
-                    ctx.lineTo(bNext.x, bNext.y);
-                    ctx.lineTo(bP.x, bP.y);
-                    ctx.closePath();
-                    ctx.fill();
-
-                    // Edge highlight
-                    ctx.strokeStyle = `rgba(255, 255, 255, ${0.2 * strength})`;
-                    ctx.lineWidth = 0.5;
-                    ctx.stroke();
-                });
-
+                strength = Math.pow(1 - dist / maxDist, 2);
+                rotX = -dy * strength * 0.005; // Using radians for internal math
+                rotY = dx * strength * 0.005;
+                transZ = strength * 100;
+                tile.el.style.transform = `scale(1.05) rotateX(${rotX * 180 / Math.PI}deg) rotateY(${rotY * 180 / Math.PI}deg) translateZ(${transZ}px)`;
             } else {
                 tile.el.style.transform = 'scale(1.05)';
             }
+
+            return { tile, tCenterX, tCenterY, rotX, rotY, transZ, strength };
+        });
+
+        // Sort by Z depth (Painter's algorithm)
+        tileData.sort((a, b) => a.transZ - b.transZ);
+
+        tileData.forEach(data => {
+            if (data.strength <= 0) return;
+
+            const halfW = (tileW / 2) * 1.05; 
+            const halfH = (tileH / 2) * 1.05;
+            const localCorners = [[-halfW, -halfH], [halfW, -halfH], [halfW, halfH], [-halfW, halfH]];
+
+            const project = (cx, cy, cz) => {
+                let x = cx, y = cy, z = cz;
+                [x, z] = rotateY(x, z, data.rotY);
+                [y, z] = rotateX(y, z, data.rotX);
+                const gX = x + (data.tCenterX - screenCenterX);
+                const gY = y + (data.tCenterY - screenCenterY);
+                const f = PERSPECTIVE / (PERSPECTIVE - z);
+                return { x: gX * f + screenCenterX, y: gY * f + screenCenterY };
+            };
+
+            const frontCorners = localCorners.map(([cx, cy]) => project(cx, cy, data.transZ));
+            const backCorners = localCorners.map(([cx, cy]) => project(cx, cy, 0));
+
+            // Draw the 4 sides
+            frontCorners.forEach((p, i) => {
+                const nextI = (i + 1) % 4;
+                const pNext = frontCorners[nextI];
+                const bP = backCorners[i];
+                const bNext = backCorners[nextI];
+
+                const sideColor = 15 + (i * 10);
+                ctx.fillStyle = `rgba(${sideColor}, ${sideColor}, ${sideColor + 5}, ${0.9 * data.strength})`;
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y); ctx.lineTo(pNext.x, pNext.y);
+                ctx.lineTo(bNext.x, bNext.y); ctx.lineTo(bP.x, bP.y);
+                ctx.closePath();
+                ctx.fill();
+            });
+
+            // Draw the "top" face on canvas to prevent seeing through the box
+            // We use the same color as the background image's average or just a dark fill
+            // so it acts as an occlusion mask.
+            ctx.fillStyle = `rgba(10, 10, 10, ${data.strength})`;
+            ctx.beginPath();
+            ctx.moveTo(frontCorners[0].x, frontCorners[0].y);
+            frontCorners.forEach(p => ctx.lineTo(p.x, p.y));
+            ctx.closePath();
+            ctx.fill();
+            
+            // Edge highlight
+            ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 * data.strength})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
         });
 
         requestAnimationFrame(update);
