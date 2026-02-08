@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const ctx = canvas.getContext('2d');
 
-    const rows = 15;
-    const cols = 15;
+    const rows = 12; // Slightly fewer rows/cols for clarity
+    const cols = 12;
     const tiles = [];
 
     const PERSPECTIVE = 1000;
@@ -33,26 +33,19 @@ document.addEventListener('DOMContentLoaded', () => {
             tile.style.backgroundSize = `${cols * 100}% ${rows * 100}%`;
 
             container.appendChild(tile);
-            tiles.push({
-                el: tile,
-                r: r,
-                c: c
-            });
+            tiles.push({ el: tile, r, c });
         }
     }
+
+    // Update grid template to match new rows/cols
+    container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+    container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
     let mouseX = -1000;
     let mouseY = -1000;
 
-    const resetMouse = () => {
-        mouseX = -1000;
-        mouseY = -1000;
-    };
-
-    window.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-    });
+    const resetMouse = () => { mouseX = -1000; mouseY = -1000; };
+    window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
     document.addEventListener('mouseleave', resetMouse);
     document.addEventListener('mouseout', (e) => {
         if (!e.relatedTarget || e.relatedTarget.nodeName === 'HTML') resetMouse();
@@ -67,16 +60,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function rotateX(y, z, deg) {
         const rad = deg * Math.PI / 180;
-        const cos = Math.cos(rad);
-        const sin = Math.sin(rad);
-        return [y * cos - z * sin, y * sin + z * cos];
+        return [y * Math.cos(rad) - z * Math.sin(rad), y * Math.sin(rad) + z * Math.cos(rad)];
     }
 
     function rotateY(x, z, deg) {
         const rad = deg * Math.PI / 180;
-        const cos = Math.cos(rad);
-        const sin = Math.sin(rad);
-        return [x * cos + z * sin, -x * sin + z * cos];
+        return [x * Math.cos(rad) + z * Math.sin(rad), -x * Math.sin(rad) + z * Math.cos(rad)];
     }
 
     function update() {
@@ -84,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const vh = window.innerHeight;
         const screenCenterX = vw / 2;
         const screenCenterY = vh / 2;
-        
         const tileW = vw / cols;
         const tileH = vh / rows;
 
@@ -93,62 +81,71 @@ document.addEventListener('DOMContentLoaded', () => {
         tiles.forEach(tile => {
             const tCenterX = (tile.c + 0.5) * tileW;
             const tCenterY = (tile.r + 0.5) * tileH;
-
             const dx = tCenterX - mouseX;
             const dy = tCenterY - mouseY;
             const dist = Math.sqrt(dx * dx + dy * dy);
-            
-            const maxDist = 400;
+            const maxDist = 450;
+
             if (dist < maxDist) {
                 const strength = Math.pow(1 - dist / maxDist, 2);
-                const rotX = -dy * strength * 0.3;
-                const rotY = dx * strength * 0.3;
-                const transZ = strength * 80;
+                const rotX = -dy * strength * 0.25;
+                const rotY = dx * strength * 0.25;
+                const transZ = strength * 100;
 
-                tile.el.style.transform = `scale(1.1) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(${transZ}px)`;
+                tile.el.style.transform = `scale(1.05) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(${transZ}px)`;
 
-                const halfW = (tileW / 2) * 1.1; 
-                const halfH = (tileH / 2) * 1.1;
+                const halfW = (tileW / 2) * 1.05; 
+                const halfH = (tileH / 2) * 1.05;
                 const localCorners = [[-halfW, -halfH], [halfW, -halfH], [halfW, halfH], [-halfW, halfH]];
 
-                const projectedCorners = localCorners.map(([cx, cy]) => {
-                    let x = cx, y = cy, z = 0;
-                    z += transZ;
+                const frontCorners = localCorners.map(([cx, cy]) => {
+                    let x = cx, y = cy, z = transZ;
                     [x, z] = rotateY(x, z, rotY);
                     [y, z] = rotateX(y, z, rotX);
-
-                    const globalX = x + (tCenterX - screenCenterX);
-                    const globalY = y + (tCenterY - screenCenterY);
-                    const factor = PERSPECTIVE / (PERSPECTIVE - z);
-                    return {
-                        x: globalX * factor + screenCenterX,
-                        y: globalY * factor + screenCenterY
-                    };
+                    const gX = x + (tCenterX - screenCenterX);
+                    const gY = y + (tCenterY - screenCenterY);
+                    const f = PERSPECTIVE / (PERSPECTIVE - z);
+                    return { x: gX * f + screenCenterX, y: gY * f + screenCenterY };
                 });
 
-                // Draw opaque sides by filling triangles to vanishing point
-                // Using a dark color that's slightly transparent to allow some overlapping logic to look natural
-                projectedCorners.forEach((p, i) => {
-                    const nextP = projectedCorners[(i + 1) % 4];
-                    
-                    // Basic shading: color varies based on which side it is
-                    const shade = 10 + (i * 15); 
-                    ctx.fillStyle = `rgba(${shade}, ${shade}, ${shade}, ${0.9 * strength})`;
+                // Instead of the vanishing point, we project to a "back" plane to create a slab/block effect
+                const backCorners = localCorners.map(([cx, cy]) => {
+                    let x = cx, y = cy, z = -50; // Fixed depth back from the grid plane
+                    [x, z] = rotateY(x, z, rotY);
+                    [y, z] = rotateX(y, z, rotX);
+                    const gX = x + (tCenterX - screenCenterX);
+                    const gY = y + (tCenterY - screenCenterY);
+                    const f = PERSPECTIVE / (PERSPECTIVE - z);
+                    return { x: gX * f + screenCenterX, y: gY * f + screenCenterY };
+                });
+
+                // Draw the 4 sides
+                frontCorners.forEach((p, i) => {
+                    const nextI = (i + 1) % 4;
+                    const pNext = frontCorners[nextI];
+                    const bP = backCorners[i];
+                    const bNext = backCorners[nextI];
+
+                    // Shading based on side index
+                    const baseColor = 20 + (i * 10);
+                    ctx.fillStyle = `rgba(${baseColor}, ${baseColor}, ${baseColor + 10}, ${0.95 * strength})`;
                     
                     ctx.beginPath();
                     ctx.moveTo(p.x, p.y);
-                    ctx.lineTo(nextP.x, nextP.y);
-                    ctx.lineTo(screenCenterX, screenCenterY);
+                    ctx.lineTo(pNext.x, pNext.y);
+                    ctx.lineTo(bNext.x, bNext.y);
+                    ctx.lineTo(bP.x, bP.y);
                     ctx.closePath();
                     ctx.fill();
 
-                    // Optional: add a slight stroke to define edges
-                    ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 * strength})`;
+                    // Edge highlight
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${0.2 * strength})`;
+                    ctx.lineWidth = 0.5;
                     ctx.stroke();
                 });
 
             } else {
-                tile.el.style.transform = 'scale(1.1)';
+                tile.el.style.transform = 'scale(1.05)';
             }
         });
 
