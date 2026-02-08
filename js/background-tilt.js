@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const cols = 15;
     const tiles = [];
 
+    const PERSPECTIVE = 1000;
+
     // Create tiles
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
@@ -43,26 +45,18 @@ document.addEventListener('DOMContentLoaded', () => {
     let mouseX = -1000;
     let mouseY = -1000;
 
-    window.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-    });
-
     const resetMouse = () => {
         mouseX = -1000;
         mouseY = -1000;
     };
 
+    window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
     document.addEventListener('mouseleave', resetMouse);
     document.addEventListener('mouseout', (e) => {
-        if (!e.relatedTarget || e.relatedTarget.nodeName === 'HTML') {
-            resetMouse();
-        }
-    });
-
-    window.addEventListener('touchmove', (e) => {
-        mouseX = e.touches[0].clientX;
-        mouseY = e.touches[0].clientY;
+        if (!e.relatedTarget || e.relatedTarget.nodeName === 'HTML') resetMouse();
     });
 
     function resize() {
@@ -72,17 +66,33 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('resize', resize);
     resize();
 
+    function rotateX(y, z, deg) {
+        const rad = deg * Math.PI / 180;
+        return [
+            y * Math.cos(rad) - z * Math.sin(rad),
+            y * Math.sin(rad) + z * Math.cos(rad)
+        ];
+    }
+
+    function rotateY(x, z, deg) {
+        const rad = deg * Math.PI / 180;
+        return [
+            x * Math.cos(rad) + z * Math.sin(rad),
+            -x * Math.sin(rad) + z * Math.cos(rad)
+        ];
+    }
+
     function update() {
         const vw = window.innerWidth;
         const vh = window.innerHeight;
-        const centerX = vw / 2;
-        const centerY = vh / 2;
+        const screenCenterX = vw / 2;
+        const screenCenterY = vh / 2;
         
         const tileW = vw / cols;
         const tileH = vh / rows;
 
         ctx.clearRect(0, 0, vw, vh);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
         ctx.lineWidth = 1;
 
         tiles.forEach(tile => {
@@ -96,26 +106,41 @@ document.addEventListener('DOMContentLoaded', () => {
             const maxDist = 400;
             if (dist < maxDist) {
                 const strength = Math.pow(1 - dist / maxDist, 2);
-                const rotateX = -dy * strength * 0.3;
-                const rotateY = dx * strength * 0.3;
-                const translateZ = strength * 80;
+                const rotX = -dy * strength * 0.3;
+                const rotY = dx * strength * 0.3;
+                const transZ = strength * 80;
 
-                tile.el.style.transform = `scale(1.1) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(${translateZ}px)`;
+                tile.el.style.transform = `scale(1.1) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(${transZ}px)`;
 
-                // Draw projection lines to vanishing point (center of screen)
-                // We'll draw from the 4 corners of the tile's current position
-                // To keep it simple and performant, we use the tile's grid corners
-                const corners = [
-                    { x: tile.c * tileW, y: tile.r * tileH },
-                    { x: (tile.c + 1) * tileW, y: tile.r * tileH },
-                    { x: (tile.c + 1) * tileW, y: (tile.r + 1) * tileH },
-                    { x: tile.c * tileW, y: (tile.r + 1) * tileH }
+                // Calculate projected corners
+                const halfW = (tileW / 2) * 1.1; // Match the scale(1.1)
+                const halfH = (tileH / 2) * 1.1;
+
+                const localCorners = [
+                    [-halfW, -halfH], [halfW, -halfH], [halfW, halfH], [-halfW, halfH]
                 ];
 
                 ctx.beginPath();
-                corners.forEach(corner => {
-                    ctx.moveTo(corner.x, corner.y);
-                    ctx.lineTo(centerX, centerY);
+                localCorners.forEach(([cx, cy]) => {
+                    let x = cx, y = cy, z = 0;
+                    
+                    // Apply CSS transform order: rotateX then rotateY then translateZ
+                    // (Actually CSS is translateZ(rotateY(rotateX(v))))
+                    [y, z] = rotateX(y, z, rotX);
+                    [x, z] = rotateY(x, z, rotY);
+                    z += transZ;
+
+                    // Move to global space relative to screen center for perspective
+                    const globalX = x + (tCenterX - screenCenterX);
+                    const globalY = y + (tCenterY - screenCenterY);
+
+                    // Perspective projection
+                    const factor = PERSPECTIVE / (PERSPECTIVE - z);
+                    const projX = globalX * factor + screenCenterX;
+                    const projY = globalY * factor + screenCenterY;
+
+                    ctx.moveTo(projX, projY);
+                    ctx.lineTo(screenCenterX, screenCenterY);
                 });
                 ctx.stroke();
 
