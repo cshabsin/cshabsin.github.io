@@ -1,10 +1,10 @@
 #background-grid-container {
+    display: none; /* Hidden by default */
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    display: grid;
     grid-template-rows: repeat(12, 1fr);
     grid-template-columns: repeat(12, 1fr);
     z-index: -1;
@@ -13,6 +13,10 @@
     pointer-events: none;
     perspective: 1000px;
     transform-style: preserve-3d;
+}
+
+#background-grid-container.active {
+    display: grid;
 }
 
 #background-lines-canvas {

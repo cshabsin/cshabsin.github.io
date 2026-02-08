@@ -15,23 +15,21 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.prepend(container);
 
     const ctx = canvas.getContext('2d');
-
     const rows = 12;
     const cols = 12;
     const tiles = [];
-
     const PERSPECTIVE = 1000;
+    let isActive = false;
 
+    // Create tiles
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
             const tile = document.createElement('div');
             tile.className = 'bg-tile';
-            
             const posX = cols > 1 ? (c / (cols - 1)) * 100 : 0;
             const posY = rows > 1 ? (r / (rows - 1)) * 100 : 0;
             tile.style.backgroundPosition = `${posX}% ${posY}%`;
             tile.style.backgroundSize = `${cols * 100}% ${rows * 100}%`;
-
             container.appendChild(tile);
             tiles.push({ el: tile, r, c });
         }
@@ -40,9 +38,30 @@ document.addEventListener('DOMContentLoaded', () => {
     container.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
     container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
+    // Easter Egg Toggle
+    const glider = document.querySelector('.glider');
+    if (glider) {
+        glider.style.cursor = 'pointer';
+        glider.addEventListener('click', () => {
+            isActive = !isActive;
+            container.classList.toggle('active', isActive);
+            
+            // Toggle the static background visibility
+            if (isActive) {
+                document.body.style.background = 'black';
+            } else {
+                // Restore the original background style (commented out in CSS, but we can set it here)
+                document.body.style.background = 'black url(css/images/boston2025.jpg) 0 0 no-repeat fixed';
+                document.body.style.backgroundSize = 'cover';
+                // Reset tile transforms
+                tiles.forEach(t => t.el.style.transform = '');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        });
+    }
+
     let mouseX = -1000;
     let mouseY = -1000;
-
     const resetMouse = () => { mouseX = -1000; mouseY = -1000; };
     window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
     document.addEventListener('mouseleave', resetMouse);
@@ -60,12 +79,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function rotateX(y, z, rad) {
         return [y * Math.cos(rad) - z * Math.sin(rad), y * Math.sin(rad) + z * Math.cos(rad)];
     }
-
     function rotateY(x, z, rad) {
         return [x * Math.cos(rad) + z * Math.sin(rad), -x * Math.sin(rad) + z * Math.cos(rad)];
     }
 
     function update() {
+        if (!isActive) {
+            requestAnimationFrame(update);
+            return;
+        }
+
         const vw = window.innerWidth;
         const vh = window.innerHeight;
         const screenCenterX = vw / 2;
@@ -75,7 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         ctx.clearRect(0, 0, vw, vh);
         
-        // Calculate all tile data first for sorting
         const tileData = tiles.map(tile => {
             const tCenterX = (tile.c + 0.5) * tileW;
             const tCenterY = (tile.r + 0.5) * tileH;
@@ -88,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (dist < maxDist) {
                 strength = Math.pow(1 - dist / maxDist, 2);
-                rotX = -dy * strength * 0.005; // Using radians for internal math
+                rotX = -dy * strength * 0.005;
                 rotY = dx * strength * 0.005;
                 transZ = strength * 100;
                 tile.el.style.transform = `scale(1.002) rotateX(${rotX * 180 / Math.PI}deg) rotateY(${rotY * 180 / Math.PI}deg) translateZ(${transZ}px)`;
@@ -99,7 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return { tile, tCenterX, tCenterY, rotX, rotY, transZ, strength };
         });
 
-        // Sort by Z depth (Painter's algorithm)
         tileData.sort((a, b) => a.transZ - b.transZ);
 
         tileData.forEach(data => {
@@ -122,13 +143,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const frontCorners = localCorners.map(([cx, cy]) => project(cx, cy, data.transZ));
             const backCorners = localCorners.map(([cx, cy]) => project(cx, cy, 0));
 
-            // Draw the 4 sides
             frontCorners.forEach((p, i) => {
                 const nextI = (i + 1) % 4;
                 const pNext = frontCorners[nextI];
                 const bP = backCorners[i];
                 const bNext = backCorners[nextI];
-
                 const sideColor = 15 + (i * 10);
                 ctx.fillStyle = `rgba(${sideColor}, ${sideColor}, ${sideColor + 5}, ${0.9 * data.strength})`;
                 ctx.beginPath();
@@ -138,9 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 ctx.fill();
             });
 
-            // Draw the "top" face on canvas to prevent seeing through the box
-            // We use the same color as the background image's average or just a dark fill
-            // so it acts as an occlusion mask.
             ctx.fillStyle = `rgba(10, 10, 10, ${data.strength})`;
             ctx.beginPath();
             ctx.moveTo(frontCorners[0].x, frontCorners[0].y);
@@ -148,7 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.closePath();
             ctx.fill();
             
-            // Edge highlight
             ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 * data.strength})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
