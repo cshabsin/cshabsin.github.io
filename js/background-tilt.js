@@ -12,6 +12,17 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let c = 0; c < cols; c++) {
             const tile = document.createElement('div');
             tile.className = 'bg-tile';
+            
+            // To make the background image "stuck" to the tile:
+            // 1. The background size must be the size of the whole grid relative to this tile.
+            tile.style.backgroundSize = `${cols * 100}% ${rows * 100}%`;
+            
+            // 2. The background position must shift so this tile shows its specific slice.
+            // Using percentages: (column / (total columns - 1)) * 100
+            const posX = cols > 1 ? (c / (cols - 1)) * 100 : 0;
+            const posY = rows > 1 ? (r / (rows - 1)) * 100 : 0;
+            tile.style.backgroundPosition = `${posX}% ${posY}%`;
+
             container.appendChild(tile);
             tiles.push({
                 el: tile,
@@ -29,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
         mouseY = e.clientY;
     });
 
-    // Touch support
     window.addEventListener('touchmove', (e) => {
         mouseX = e.touches[0].clientX;
         mouseY = e.touches[0].clientY;
@@ -53,10 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const maxDist = 400;
             if (dist < maxDist) {
                 const strength = Math.pow(1 - dist / maxDist, 2);
-                // Rotate more for more drama
-                const rotateX = -dy * strength * 0.25;
-                const rotateY = dx * strength * 0.25;
-                const translateZ = strength * 60;
+                const rotateX = -dy * strength * 0.3; // Increased rotation for more "tilt" feel
+                const rotateY = dx * strength * 0.3;
+                const translateZ = strength * 80;
 
                 tile.el.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(${translateZ}px)`;
             } else {
