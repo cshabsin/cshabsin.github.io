@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.createElement('div');
     container.id = 'background-grid-container';
     
-    // Create canvas for the lines
     const canvas = document.createElement('canvas');
     canvas.id = 'background-lines-canvas';
     canvas.style.position = 'absolute';
@@ -12,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.style.height = '100%';
     canvas.style.pointerEvents = 'none';
     
-    // Tiles will be appended after canvas, but we'll use z-index to be safe
     container.appendChild(canvas);
     document.body.prepend(container);
 
@@ -24,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const PERSPECTIVE = 1000;
 
-    // Create tiles
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
             const tile = document.createElement('div');
@@ -108,40 +105,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 const rotY = dx * strength * 0.3;
                 const transZ = strength * 80;
 
-                // Apply CSS transforms
                 tile.el.style.transform = `scale(1.1) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(${transZ}px)`;
-
-                // Draw projection lines
-                ctx.strokeStyle = `rgba(255, 255, 255, ${0.4 * strength})`;
-                ctx.lineWidth = 1;
 
                 const halfW = (tileW / 2) * 1.1; 
                 const halfH = (tileH / 2) * 1.1;
-                const corners = [[-halfW, -halfH], [halfW, -halfH], [halfW, halfH], [-halfW, halfH]];
+                const localCorners = [[-halfW, -halfH], [halfW, -halfH], [halfW, halfH], [-halfW, halfH]];
 
-                corners.forEach(([cx, cy]) => {
+                const projectedCorners = localCorners.map(([cx, cy]) => {
                     let x = cx, y = cy, z = 0;
-                    
-                    // Transform order must match CSS: translateZ, then rotateY, then rotateX
-                    // 1. translateZ
                     z += transZ;
-                    // 2. rotateY
                     [x, z] = rotateY(x, z, rotY);
-                    // 3. rotateX
                     [y, z] = rotateX(y, z, rotX);
 
-                    // Move to global space (relative to screen center)
                     const globalX = x + (tCenterX - screenCenterX);
                     const globalY = y + (tCenterY - screenCenterY);
-
-                    // Perspective projection
                     const factor = PERSPECTIVE / (PERSPECTIVE - z);
-                    const projX = globalX * factor + screenCenterX;
-                    const projY = globalY * factor + screenCenterY;
+                    return {
+                        x: globalX * factor + screenCenterX,
+                        y: globalY * factor + screenCenterY
+                    };
+                });
 
+                // Draw opaque sides by filling triangles to vanishing point
+                // Using a dark color that's slightly transparent to allow some overlapping logic to look natural
+                projectedCorners.forEach((p, i) => {
+                    const nextP = projectedCorners[(i + 1) % 4];
+                    
+                    // Basic shading: color varies based on which side it is
+                    const shade = 10 + (i * 15); 
+                    ctx.fillStyle = `rgba(${shade}, ${shade}, ${shade}, ${0.9 * strength})`;
+                    
                     ctx.beginPath();
-                    ctx.moveTo(projX, projY);
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(nextP.x, nextP.y);
                     ctx.lineTo(screenCenterX, screenCenterY);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Optional: add a slight stroke to define edges
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 * strength})`;
                     ctx.stroke();
                 });
 
