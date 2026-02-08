@@ -40,9 +40,16 @@ document.addEventListener('DOMContentLoaded', () => {
         mouseY = e.clientY;
     });
 
-    window.addEventListener('mouseleave', () => {
+    const resetMouse = () => {
         mouseX = -1000;
         mouseY = -1000;
+    };
+
+    document.addEventListener('mouseleave', resetMouse);
+    document.addEventListener('mouseout', (e) => {
+        if (!e.relatedTarget || e.relatedTarget.nodeName === 'HTML') {
+            resetMouse();
+        }
     });
 
     window.addEventListener('touchmove', (e) => {
