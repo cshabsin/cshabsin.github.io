@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.createElement('div');
     container.id = 'background-grid-container';
     
+    // Create canvas for the lines
     const canvas = document.createElement('canvas');
     canvas.id = 'background-lines-canvas';
     canvas.style.position = 'absolute';
@@ -10,8 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.style.width = '100%';
     canvas.style.height = '100%';
     canvas.style.pointerEvents = 'none';
+    
+    // Tiles will be appended after canvas, but we'll use z-index to be safe
     container.appendChild(canvas);
-
     document.body.prepend(container);
 
     const ctx = canvas.getContext('2d');
@@ -68,18 +70,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function rotateX(y, z, deg) {
         const rad = deg * Math.PI / 180;
-        return [
-            y * Math.cos(rad) - z * Math.sin(rad),
-            y * Math.sin(rad) + z * Math.cos(rad)
-        ];
+        const cos = Math.cos(rad);
+        const sin = Math.sin(rad);
+        return [y * cos - z * sin, y * sin + z * cos];
     }
 
     function rotateY(x, z, deg) {
         const rad = deg * Math.PI / 180;
-        return [
-            x * Math.cos(rad) + z * Math.sin(rad),
-            -x * Math.sin(rad) + z * Math.cos(rad)
-        ];
+        const cos = Math.cos(rad);
+        const sin = Math.sin(rad);
+        return [x * cos + z * sin, -x * sin + z * cos];
     }
 
     function update() {
@@ -92,9 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const tileH = vh / rows;
 
         ctx.clearRect(0, 0, vw, vh);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-        ctx.lineWidth = 1;
-
+        
         tiles.forEach(tile => {
             const tCenterX = (tile.c + 0.5) * tileW;
             const tCenterY = (tile.r + 0.5) * tileH;
@@ -110,27 +108,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 const rotY = dx * strength * 0.3;
                 const transZ = strength * 80;
 
+                // Apply CSS transforms
                 tile.el.style.transform = `scale(1.1) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(${transZ}px)`;
 
-                // Calculate projected corners
-                const halfW = (tileW / 2) * 1.1; // Match the scale(1.1)
+                // Draw projection lines
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.4 * strength})`;
+                ctx.lineWidth = 1;
+
+                const halfW = (tileW / 2) * 1.1; 
                 const halfH = (tileH / 2) * 1.1;
+                const corners = [[-halfW, -halfH], [halfW, -halfH], [halfW, halfH], [-halfW, halfH]];
 
-                const localCorners = [
-                    [-halfW, -halfH], [halfW, -halfH], [halfW, halfH], [-halfW, halfH]
-                ];
-
-                ctx.beginPath();
-                localCorners.forEach(([cx, cy]) => {
+                corners.forEach(([cx, cy]) => {
                     let x = cx, y = cy, z = 0;
                     
-                    // Apply CSS transform order: rotateX then rotateY then translateZ
-                    // (Actually CSS is translateZ(rotateY(rotateX(v))))
-                    [y, z] = rotateX(y, z, rotX);
-                    [x, z] = rotateY(x, z, rotY);
+                    // Transform order must match CSS: translateZ, then rotateY, then rotateX
+                    // 1. translateZ
                     z += transZ;
+                    // 2. rotateY
+                    [x, z] = rotateY(x, z, rotY);
+                    // 3. rotateX
+                    [y, z] = rotateX(y, z, rotX);
 
-                    // Move to global space relative to screen center for perspective
+                    // Move to global space (relative to screen center)
                     const globalX = x + (tCenterX - screenCenterX);
                     const globalY = y + (tCenterY - screenCenterY);
 
@@ -139,10 +139,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const projX = globalX * factor + screenCenterX;
                     const projY = globalY * factor + screenCenterY;
 
+                    ctx.beginPath();
                     ctx.moveTo(projX, projY);
                     ctx.lineTo(screenCenterX, screenCenterY);
+                    ctx.stroke();
                 });
-                ctx.stroke();
 
             } else {
                 tile.el.style.transform = 'scale(1.1)';
