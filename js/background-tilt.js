@@ -91,9 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 rotX = -dy * strength * 0.005; // Using radians for internal math
                 rotY = dx * strength * 0.005;
                 transZ = strength * 100;
-                tile.el.style.transform = `scale(1.05) rotateX(${rotX * 180 / Math.PI}deg) rotateY(${rotY * 180 / Math.PI}deg) translateZ(${transZ}px)`;
+                tile.el.style.transform = `scale(1.002) rotateX(${rotX * 180 / Math.PI}deg) rotateY(${rotY * 180 / Math.PI}deg) translateZ(${transZ}px)`;
             } else {
-                tile.el.style.transform = 'scale(1.05)';
+                tile.el.style.transform = 'scale(1.002)';
             }
 
             return { tile, tCenterX, tCenterY, rotX, rotY, transZ, strength };
@@ -105,8 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
         tileData.forEach(data => {
             if (data.strength <= 0) return;
 
-            const halfW = (tileW / 2) * 1.05; 
-            const halfH = (tileH / 2) * 1.05;
+            const halfW = (tileW / 2) * 1.002; 
+            const halfH = (tileH / 2) * 1.002;
             const localCorners = [[-halfW, -halfH], [halfW, -halfH], [halfW, halfH], [-halfW, halfH]];
 
             const project = (cx, cy, cz) => {
